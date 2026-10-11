@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Supplier files loaded as received by the Prefect job (load_bird_strikes.py)
+    database: BIRD_STRIKES
+    schema: RAW
+    tables:
+      - name: bird_strikes
+        description: >
+          One row per CSV record per delivery, all VARCHAR, using the exact source
+          column names. Includes empty rows from the daily files and every version
+          of records that were updated.

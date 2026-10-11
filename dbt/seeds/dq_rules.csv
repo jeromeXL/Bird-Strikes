@@ -1,0 +1,6 @@
+rule_id,rule_name,description,why_it_matters
+altitude_bin_mismatch,Altitude bin mismatch,"Feet above ground does not fall within the Altitude bin (exactly 1,000 ft is treated as < 1000 ft, following the supplier's practice)","Altitude analysis can use either field; if they disagree, reports built on each will contradict each other"
+damage_without_cost,Damage reported with $0 cost,"Effect: Indicated Damage is 'Caused damage' but Cost: Total $ is 0","Total cost of damage is understated; $0 probably means 'not reported' rather than 'no cost'"
+cost_without_damage,Cost reported with no damage,"Cost: Total $ is above 0 but Effect: Indicated Damage is 'No damage'","Contradictory record - either the damage flag or the cost is wrong"
+number_struck_mismatch,Number struck bin mismatch,"Wildlife: Number Struck Actual does not fall within the Wildlife: Number struck bin","Counts of wildlife struck can use either field; they must agree"
+incomplete_record,Incomplete record,"Flight date or airport is missing","Record cannot appear in trends over time or airport analysis, so totals by date/airport are understated"

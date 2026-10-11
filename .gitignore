@@ -1,0 +1,14 @@
+# Secrets - never commit
+.env
+*.p8
+*.pem
+
+# Python
+__pycache__/
+.venv/
+
+# dbt generated files
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+logs/

@@ -1,0 +1,62 @@
+version: 2
+
+seeds:
+  - name: batches
+    description: >
+      One row per supplier delivery. Maps the stage folder each file was loaded
+      from to its delivery order and load type. 'delta' files contain only new and
+      changed records; the 'full' file is a complete snapshot, so records missing
+      from it are treated as deleted.
+    config:
+      column_types:
+        stage_folder: varchar
+        batch_seq: number
+        batch_name: varchar
+        load_type: varchar
+        delivery_date: date
+        has_pilot_warned: boolean
+        has_number_of_engines: boolean
+    columns:
+      - name: stage_folder
+        description: Folder in RAW.LANDING_STAGE the file was loaded from, e.g. 01_base
+        data_tests:
+          - unique
+          - not_null
+      - name: batch_seq
+        description: Delivery order (1 = first). Later batches override earlier ones.
+        data_tests:
+          - unique
+          - not_null
+      - name: load_type
+        description: delta (inserts and updates only) or full (complete snapshot)
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["delta", "full"]
+      - name: delivery_date
+        description: >
+          Date the file was received. ASSUMED - the supplier files carry no delivery
+          date (Mon-Thu daily files, then the end-of-week snapshot).
+        data_tests:
+          - not_null
+      - name: has_pilot_warned
+        description: 'Whether the file contained the "Pilot warned of birds or wildlife?" column (missing from Day 2)'
+      - name: has_number_of_engines
+        description: 'Whether the file contained the "Aircraft: Number of engines?" column (only in Final)'
+
+  - name: dq_rules
+    description: >
+      The data quality rules checked on every build. Listing them here means the DQ
+      summary shows every rule, including rules with no failures.
+    config:
+      column_types:
+        rule_id: varchar
+        rule_name: varchar
+        description: varchar
+        why_it_matters: varchar
+    columns:
+      - name: rule_id
+        description: Identifier used in dq_record_issues
+        data_tests:
+          - unique
+          - not_null

@@ -1,0 +1,6 @@
+stage_folder,batch_seq,batch_name,load_type,delivery_date,has_pilot_warned,has_number_of_engines
+01_base,1,Base,delta,2026-10-05,true,false
+02_day1,2,Day 1,delta,2026-10-06,true,false
+03_day2,3,Day 2,delta,2026-10-07,false,false
+04_day3,4,Day 3,delta,2026-10-08,true,false
+05_final,5,Final,full,2026-10-11,true,true

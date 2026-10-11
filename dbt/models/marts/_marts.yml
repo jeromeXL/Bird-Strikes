@@ -1,0 +1,153 @@
+version: 2
+
+models:
+  # ---------------------------------------------------------------- fact
+  - name: fct_bird_strike
+    description: >
+      One row per live bird strike (records deleted by the latest full snapshot are
+      excluded). Links to the dimensions by key; strike-level fields that do not belong
+      to a dimension are stored directly on the fact.
+    columns:
+      - name: record_id
+        description: Supplier's unique ID for the strike report
+        data_tests:
+          - unique
+          - not_null
+      - name: flight_date
+        description: Date of the strike; joins to dim_date.date_day (NULL for 129 incomplete records)
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: airport_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_airport')
+                field: airport_key
+      - name: aircraft_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_aircraft')
+                field: aircraft_key
+      - name: operator_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_operator')
+                field: operator_key
+      - name: wildlife_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_wildlife')
+                field: wildlife_key
+      - name: conditions_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_conditions')
+                field: conditions_key
+      - name: altitude_bin_sort
+        description: Sort order for altitude_bin (1 = '< 1000 ft')
+      - name: number_struck_bin_sort
+        description: Sort order for number_struck_bin (1 = '1' ... 4 = 'Over 100')
+      - name: number_of_engines
+        description: Kept on the fact because it varies between records of the same aircraft model
+      - name: wildlife_size
+        description: Kept on the fact because the same species is recorded with different sizes
+      - name: strike_count
+        description: Always 1 - sum it to count strikes
+      - name: damaged_strike_count
+        description: 1 if the strike caused damage - sum it to count damaging strikes
+      - name: has_dq_issue
+        description: TRUE if the record fails at least one data quality rule (see dq_record_issues)
+
+  # ---------------------------------------------------------------- dimensions
+  - name: dim_date
+    description: Calendar, one row per day from 2000-01-01 to 2011-12-31
+    columns:
+      - name: date_day
+        data_tests:
+          - unique
+          - not_null
+
+  - name: dim_airport
+    description: One row per airport and state. Records with no airport get an 'Unknown' airport per state.
+    columns:
+      - name: airport_key
+        data_tests:
+          - unique
+          - not_null
+      - name: country
+        description: United States (incl. DC, Puerto Rico, Virgin Islands), Canada, or Other / unknown ('N/A')
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["United States", "Canada", "Other / unknown"]
+
+  - name: dim_aircraft
+    description: One row per aircraft make/model
+    columns:
+      - name: aircraft_key
+        data_tests:
+          - unique
+          - not_null
+
+  - name: dim_operator
+    description: One row per airline/operator, grouped into operator categories
+    columns:
+      - name: operator_key
+        data_tests:
+          - unique
+          - not_null
+      - name: operator_category
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["Airline / named operator", "Business", "Private", "Government", "Military", "Unknown"]
+
+  - name: dim_wildlife
+    description: One row per wildlife species
+    columns:
+      - name: wildlife_key
+        data_tests:
+          - unique
+          - not_null
+      - name: is_species_identified
+        description: FALSE for 'Unknown bird ...' species
+
+  - name: dim_conditions
+    description: >
+      One row per precipitation + sky combination. The multi-value precipitation field
+      is split into one flag per condition (has_fog, has_rain, has_snow).
+    columns:
+      - name: conditions_key
+        data_tests:
+          - unique
+          - not_null
+      - name: precipitation_category
+        description: None, Single (one condition) or Mixed (more than one)
+
+  # ---------------------------------------------------------------- data quality
+  - name: dq_record_issues
+    description: One row per live record per data quality rule it fails. Records are flagged, not removed.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [record_id, rule_id]
+
+  - name: dq_summary
+    description: One row per data quality rule with the number and percentage of live records failing it
+    columns:
+      - name: rule_id
+        data_tests:
+          - unique
+          - not_null

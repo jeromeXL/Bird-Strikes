@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  - name: stg_bird_strikes
+    description: >
+      Cleaned and typed bird strike records. One row per record per delivery batch
+      (empty rows removed). A record updated in a later batch appears once per batch
+      it was delivered in; picking the latest version happens in the intermediate layer.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [record_id, batch_seq]
+    columns:
+      - name: record_id
+        description: Supplier's unique ID for the strike report
+        data_tests:
+          - not_null
+      - name: batch_seq
+        description: Delivery order from the batches seed (1 = Base ... 5 = Final)
+        data_tests:
+          - not_null   # fails if a file was loaded from a folder missing from the seed
+      - name: load_type
+        description: delta (inserts/updates only) or full (complete snapshot)
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["delta", "full"]
+      - name: source_file
+        description: Stage path of the file the row was loaded from
+      - name: loaded_at
+        description: When the row was loaded into RAW
+      - name: flight_date
+        description: Date of the flight (time in the source is always 00:00)
+        data_tests:
+          - not_null:
+              config:
+                severity: warn   # 236 source rows have no FlightDate
+      - name: feet_above_ground
+        description: Height of the strike in feet (thousands separators removed)
+      - name: number_of_engines
+        description: Only supplied in the Final file; non-numeric values (e.g. 'C') become NULL
+      - name: is_large_aircraft
+        description: Converted from Yes/No
+      - name: pilot_warned
+        description: Converted from Y/N. NULL for all of Day 2, where the column was missing from the file
+      - name: remains_collected
+        description: Converted from TRUE/FALSE
+      - name: remains_sent_to_smithsonian
+        description: Converted from TRUE/FALSE
+      - name: caused_damage
+        description: TRUE when the source says 'Caused damage'
+      - name: cost_total_usd
+        description: Total cost in USD (thousands separators removed)
+      - name: people_injured
+        description: Number of people injured
+      - name: remarks
+        description: Free-text remarks; NULL when the source says None / NONE / None.

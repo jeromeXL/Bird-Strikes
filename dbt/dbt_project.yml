@@ -1,0 +1,26 @@
+name: bird_strikes
+version: "1.0.0"
+profile: bird_strikes   # connection details live in C:\Users\Jerome\.dbt\profiles.yml
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  bird_strikes:
+    staging:
+      +schema: STAGING
+      +materialized: view   # cleaning only, always reflects what is in RAW
+    intermediate:
+      +schema: INTERMEDIATE
+      +materialized: table  # business logic across batches, stored for downstream use
+    marts:
+      +schema: MARTS
+      +materialized: table  # star schema + data quality, queried by the BI tool
+
+seeds:
+  bird_strikes:
+    +schema: STAGING

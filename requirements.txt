@@ -1,0 +1,4 @@
+prefect
+snowflake-connector-python
+python-dotenv
+dbt-snowflake

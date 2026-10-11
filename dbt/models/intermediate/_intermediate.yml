@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: int_bird_strikes_current
+    description: >
+      Current state of every bird strike record: one row per record holding its most
+      recent delivered version (supplier corrections applied as updates). Records
+      absent from the latest full snapshot are kept and flagged is_deleted.
+      Reporting models should filter on not is_deleted.
+    columns:
+      - name: record_id
+        description: Supplier's unique ID for the strike report
+        data_tests:
+          - unique
+          - not_null
+      - name: pilot_warned
+        description: >
+          From the latest batch that contained the column (Day 2's file did not), so a
+          missing column never blanks out a value
+      - name: number_of_engines
+        description: From the latest batch that contained the column (only supplied in Final)
+      - name: first_seen_batch
+        description: Batch the record was first delivered in
+      - name: first_seen_date
+        description: Delivery date of first_seen_batch (assumed dates, see batches seed)
+      - name: last_seen_batch
+        description: Most recent batch the record was delivered in
+      - name: last_seen_date
+        description: Delivery date of last_seen_batch
+      - name: times_delivered
+        description: Number of batches the record appeared in
+      - name: is_deleted
+        description: TRUE when the record is missing from the latest full snapshot
+        data_tests:
+          - not_null
+      - name: deleted_date
+        description: Delivery date of the full snapshot that removed the record
